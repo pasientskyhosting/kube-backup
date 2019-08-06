@@ -101,6 +101,8 @@ for namespace in $NAMESPACES; do
         'del(
             .metadata.annotations."control-plane.alpha.kubernetes.io/leader",
             .metadata.annotations."kubectl.kubernetes.io/last-applied-configuration",
+            .metadata.annotations."autoscaling.alpha.kubernetes.io/conditions",
+            .metadata.annotations."autoscaling.alpha.kubernetes.io/current-metrics",
             .metadata.creationTimestamp,
             .metadata.generation,
             .metadata.resourceVersion,
@@ -108,7 +110,7 @@ for namespace in $NAMESPACES; do
             .metadata.uid,
             .spec.clusterIP,
             .status
-        )' | python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' >"$GIT_REPO_PATH/$GIT_PREFIX_PATH/${namespace}/${name}.${type}.yaml"
+        )' | jq 'if .spec.replicas != null then .spec.replicas = 1 else . end' | python -c 'import sys, yaml, json; yaml.safe_dump(json.load(sys.stdin), sys.stdout, default_flow_style=False)' >"$GIT_REPO_PATH/$GIT_PREFIX_PATH/${namespace}/${name}.${type}.yaml"
         done
     done
 done
